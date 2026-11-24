@@ -1,0 +1,70 @@
+explication de la fonction A
+on déclare taille de A : une matrice carre de taille (n-1)*(n-1) et on la remplie avec des 0 grace a la fct zeros(,)
+on parcout la matrice par la boucle for 
+on remarque que la matrice A tridiagonale
+astuce pour la remplir sans parcourir toute la matrice
+a chaque i on change la valeur de A(i,i) a -2 puis on remplit a gauche et a droite par 1
+explication de la fonction b
+on definit h le pas du maillage 
+ones(N-1,1) est un vecteur de N-1 uns on le mutiplie par 
+-(q*h^2/k) puis on soustracte de la premiere val de b T0 et de la derniere TL
+explication de la fonction resolution_chaleur
+on calcule h pas du maillage 
+on cree la ligne x
+(0:N) donne ligne 0,1,..,N
+on la multiplie par h on obtient 0,h,2h,3h,..,L
+puis on fait la transposee pour que ce soitr un vecteur
+on construit la matrice A avec la fct quon adefinie
+mm pour b 
+on resout le système et on recoit T grace a loperateur /
+puis on ajoute les deux températures limites
+on prnd N=20 et on trace la courbe on obtient un maximum en 0,9 on calcule la solution analytique c la mm num
+ecart 10^-14:erreur darrondi ca ne change pas avec le changement de N parc eque ca provient de larrondi fait par la machine
+source variable ca veut dire que q depend de x nest pas la mm dans tote la barre
+explication du second membre dune source variable
+mm resonnement que celui sune source invariable mais on definit un vecteur 
+qx=q0*(1+x/l) quon multiplie par -q/h^2
+1. Qu'est-ce qu'on cherche avec p ?
+On veut savoir si l'erreur de la méthode diminue quand on met plus de points. Si elle diminue, p nous dit à quelle vitesse (p = 2 : erreur divisée par 4 quand on double N).
+
+2. Pourquoi la méthode fait normalement une erreur.
+La méthode remplace la vraie dérivée seconde par une formule approchée. Cette approximation se trompe d'un petit terme : (h²/12)·T⁗, où T⁗ est la dérivée quatrième de T. C'est la seule source d'erreur de la méthode.
+
+3. Pourquoi ici elle ne se trompe pas.
+Ici, T est un polynôme de degré 3 (avec des x³ au plus). Si on dérive un tel polynôme quatre fois, on obtient 0 : T⁗ = 0. Le terme d'erreur vaut donc 0 × h²/12 = 0. La méthode ne fait aucune erreur d'approximation : la solution qu'elle donne est exactement la solution analytique.
+
+4. D'où viennent alors les 10⁻¹⁴ ?
+Du calcul de l'ordinateur, qui arrondit à 16 chiffres. Ce n'est pas la méthode qui se trompe, c'est la machine. Cette erreur-là est minuscule, aléatoire, et n'a aucune raison de diminuer quand h diminue (elle augmente même un peu). Comme elle ne suit pas la loi E ≈ C·h^p, le p calculé avec elle (0 ; −3,73 ; −0,38 ; −0,57) est du hasard : il ne mesure rien.
+
+Le but de la simulation paramétrique est d'utiliser le programme comme un outil de physique : on fait varier un seul paramètre à la fois (q, k ou N), on garde les autres fixes, et on regarde ce qui change dans la température. Jusqu'ici, on a surtout cherché à vérifier que la méthode numérique est correcte. Ici, on s'en sert pour comprendre le problème physique.
+
+1. Influence de q (la source de chaleur): plus q est grand, plus la barre chauffe, et le maximum se rapproche du milieu. Pour q = 0 (question 27), il n'y a plus de source et la température est une droite.
+
+2. Influence de k (la conductivité).un mayeriau tres conducteur ecavue facilement la chaleur vers les extremites et sechauffe peu cpour cela plus k augmente plus tmax diminue et xmax augmente
+
+3. Influence du maillage. On fait varier N de 10 à 500 avec la physique fixée. Ici, on ne s'intéresse plus à la température elle-même, mais à la qualité et au coût du calcul. on utlise tic() toc() ca nous donne le temps pris par la machine a executer 
+question 29/30:1. Pourquoi N² en mémoire. Une matrice dense de taille (N−1) × (N−1) stocke toutes ses cases, même les zéros. Elle a (N−1)² cases, soit environ N². Exemple :
+
+N = 100 : 99 × 99 ≈ 10 000 nombres ;
+N = 500 : 499 × 499 ≈ 250 000 nombres ;
+N = 5 000 : environ 25 millions de nombres (200 Mo avec 8 octets par nombre).
+
+Si N est multiplié par 10, la mémoire est multipliée par 100.
+
+2. Pourquoi N³ en opérations. A \ b utilise l'élimination de Gauss. Pour annuler les coefficients sous la diagonale, on traite la matrice colonne par colonne :
+
+il y a environ N colonnes ;
+pour chaque colonne, on met à jour environ N lignes ;
+chaque ligne compte environ N cases.
+
+Cela fait N × N × N = N³ opérations (plus précisément environ (2/3)·N³). Si N est multiplié par 10, le temps est multiplié par environ 1000. C'est ce qu'on a vu : de N = 100 à N = 500 (facteur 5), le temps est multiplié par environ 45, et 5³ = 125 en donne l'ordre de grandeur.
+
+3. « Le plus petit N qui atteint la précision voulue ». Le coût augmente avec N, donc il n'y a pas intérêt à prendre N plus grand que nécessaire. Si on veut une erreur de 10⁻³ par exemple, on prend le premier N qui l'atteint, pas N = 1 000 par précaution.
+
+4. L'estimation par raffinement N → 2N. Souvent on ne connaît pas la solution exacte, donc on ne peut pas calculer E_N. On compare alors deux solutions numériques : celle avec N et celle avec 2N, aux points communs. Si la différence est petite (par exemple moins que la précision voulue), la solution avec N est assez précise. Sinon, on double N et on recommence.
+
+5. Pourquoi « creuse » (sparse). Notre matrice A est tridiagonale : sur chaque ligne, il n'y a que 3 nombres non nuls, tout le reste vaut 0. Au total, il y a environ 3N nombres non nuls, sur N² cases. Stocker des zéros est inutile. Un stockage creux ne garde que les nombres non nuls et leurs positions :
+pourquoi le choix de la source sinusoidale?Avec la source constante, la solution est un polynôme de degré 2 ; avec q₀(1 + x/L), de degré 3.
+Dans les deux cas, la dérivée quatrième T⁗ est nulle, donc l'erreur de la méthode (h²/12)·T⁗ est nulle. Le schéma est exact, et on ne voit que du bruit d'arrondi (10⁻¹⁴ à 10⁻¹²).
+On ne peut donc pas mesurer l'ordre de convergence p avec ces deux sources.
+Avec un sinus, T⁗ n'est plus nulle : le schéma fait une vraie erreur, qui diminue quand h diminue, et on trouve p ≈ 2.
